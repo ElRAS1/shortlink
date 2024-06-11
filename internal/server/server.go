@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/ELRAS1/shortlink/store"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -17,11 +18,7 @@ type config struct {
 type server struct {
 	srv    *http.Server
 	logger *slog.Logger
-	// store
-}
-
-func NewServer(cfg config) *server {
-	return &server{}
+	store  *store.Store
 }
 
 func StartServer() *http.Server {
@@ -30,7 +27,7 @@ func StartServer() *http.Server {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	server := NewServer(cfg)
+	server := &server{}
 	server.srv = &http.Server{Addr: cfg.Port, Handler: server.Routes()}
 	server.ConfigureLogger(cfg.Loglevel, cfg.Configlog)
 	slog.SetDefault(server.logger)

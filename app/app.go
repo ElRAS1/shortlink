@@ -9,7 +9,6 @@ import (
 func main() {
 	srv := server.StartServer()
 	err := srv.ListenAndServe()
-
 	if err != nil {
 		log.Fatalln(err)
 	}
