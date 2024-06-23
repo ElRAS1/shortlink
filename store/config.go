@@ -1,14 +1,9 @@
 package store
 
 import (
-	"database/sql"
 	"sync"
 )
 
-type database struct {
-	db    *sql.DB
-	DbUrl string
-}
 type data struct {
 	oldlink string
 	newlink string
@@ -19,9 +14,9 @@ type cache struct {
 }
 
 type configDB struct {
-	port     int
-	host     string
-	user     string
-	password string
-	dbname   string
+	Port     string `env:"PORT" env-default:"5432"`
+	Host     string `env:"HOST" env-default:"localhost"`
+	Name     string `env:"NAME" env-default:"postgres"`
+	User     string `env:"USER" env-default:"user"`
+	Password string `env:"PASSWORD"`
 }

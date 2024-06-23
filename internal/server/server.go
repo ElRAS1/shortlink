@@ -32,5 +32,23 @@ func StartServer() *http.Server {
 	server.ConfigureLogger(cfg.Loglevel, cfg.Configlog)
 	slog.SetDefault(server.logger)
 	log.Printf("app starting in port%s\n", server.srv.Addr)
+
+	err = server.ConfigureStore()
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println("connecting in database")
+
 	return server.srv
+}
+
+func (s *server) ConfigureStore() error {
+	s.store = store.New()
+
+	if err := s.store.Open(); err != nil {
+		return err
+	}
+
+	return nil
 }
