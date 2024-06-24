@@ -11,12 +11,6 @@ services:
       POSTGRES_DB: ${DB_NAME}
     ports:
       - 5433:5432
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${DB_USER}" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
     restart: unless-stopped
 
 volumes:

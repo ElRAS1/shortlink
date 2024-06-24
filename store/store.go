@@ -32,9 +32,8 @@ func (s *Store) Open() error {
 	}
 	dbUrl := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
-	db, err := sqlx.Connect("postgres", dbUrl)
-	fmt.Println(dbUrl)
-	// defer s.Db.Close()
+	s.Db, err = sqlx.Connect("postgres", dbUrl)
+	defer s.Db.Close()
 
 	if err != nil {
 		return err
@@ -43,7 +42,6 @@ func (s *Store) Open() error {
 	if err = s.Db.Ping(); err != nil {
 		return err
 	}
-	s.Db = db
 	return nil
 }
 
