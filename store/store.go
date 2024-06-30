@@ -1,8 +1,10 @@
 package store
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"sync"
 
@@ -21,10 +23,9 @@ func New() *Store {
 	chc := cache{mu: &sync.RWMutex{}, ch: make(map[data]struct{})}
 	data := data{oldlink: "", newlink: ""}
 	return &Store{Db: &sqlx.DB{}, Cache: &chc, Data: &data}
-
 }
 
-func (s *Store) Open() error {
+func (s *Store) Open(ctx context.Context) error {
 	cfg := configDB{}
 	err := s.loadEnv(&cfg)
 	if err != nil {
@@ -32,11 +33,13 @@ func (s *Store) Open() error {
 	}
 	dbUrl := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
-	s.Db, err = sqlx.Connect("postgres", dbUrl)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+	s.Db, err = sqlx.ConnectContext(ctx, "postgres", dbUrl)
 	if err != nil {
 		return err
 	}
-	if err = s.Db.Ping(); err != nil {
+	if err = s.Db.PingContext(ctx); err != nil {
 		return err
 	}
 	return nil
