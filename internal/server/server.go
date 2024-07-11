@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/ELRAS1/shortlink/internal/logger"
 	"github.com/ELRAS1/shortlink/store"
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -19,7 +20,7 @@ type config struct {
 type server struct {
 	Srv    *http.Server
 	logger *slog.Logger
-	store  *store.Store
+	store  *store.Storage
 }
 
 func StartServer(ctx context.Context) server {
@@ -30,7 +31,7 @@ func StartServer(ctx context.Context) server {
 	}
 	server := &server{}
 	server.Srv = &http.Server{Addr: cfg.Port, Handler: server.Routes()}
-	server.ConfigureLogger(cfg.Loglevel, cfg.Configlog)
+	server.logger = logger.ConfigureLogger(cfg.Loglevel, cfg.Configlog)
 	slog.SetDefault(server.logger)
 	log.Printf("app starting in port%s\n", server.Srv.Addr)
 	err = server.ConfigureStore(ctx)
@@ -54,13 +55,11 @@ func Finish(ctx context.Context, s server) error {
 	if err := s.store.Db.Close(); err != nil {
 		s.logger.Error(err.Error())
 	}
-	if err := s.Srv.Close(); err != nil {
-		s.logger.Error(err.Error())
-	}
 	log.Println("stopping server in graceful shutdown...")
 	select {
 	case <-ctx.Done():
 		log.Println("context cancelled")
+		return nil
 	default:
 	}
 	return nil

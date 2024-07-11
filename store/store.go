@@ -13,19 +13,19 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Store struct {
+type Storage struct {
 	Db    *sqlx.DB
 	Cache *cache
 	Data  *data
 }
 
-func New() *Store {
+func New() *Storage {
 	chc := cache{mu: &sync.RWMutex{}, ch: make(map[data]struct{})}
-	data := data{oldlink: "", newlink: ""}
-	return &Store{Db: &sqlx.DB{}, Cache: &chc, Data: &data}
+	data := data{oldlink: "", newlink: "", id: 0}
+	return &Storage{Db: &sqlx.DB{}, Cache: &chc, Data: &data}
 }
 
-func (s *Store) Open(ctx context.Context) error {
+func (s *Storage) Open(ctx context.Context) error {
 	cfg := configDB{}
 	err := s.loadEnv(&cfg)
 	if err != nil {
@@ -45,7 +45,7 @@ func (s *Store) Open(ctx context.Context) error {
 	return nil
 }
 
-func (s *Store) loadEnv(cfg *configDB) error {
+func (s *Storage) loadEnv(cfg *configDB) error {
 	if err := godotenv.Load(); err != nil {
 		return err
 	}

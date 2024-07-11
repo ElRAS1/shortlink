@@ -1,10 +1,14 @@
 package server
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/ELRAS1/shortlink/internal/middlware"
+)
 
 func (s *server) Routes() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.Handle("/shortlink", s.logMiddle(http.HandlerFunc(s.handleshort)))
+	mux.Handle("/shortlink", middlware.Middlware(http.HandlerFunc(s.handleshort)))
 	return mux
 }
 
