@@ -5,6 +5,7 @@ import (
 )
 
 type data struct {
+	id      uint8
 	oldlink string
 	newlink string
 }
