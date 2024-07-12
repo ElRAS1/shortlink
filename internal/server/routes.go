@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/ELRAS1/shortlink/internal/logger"
 	"github.com/ELRAS1/shortlink/internal/middlware"
 )
 
@@ -16,6 +17,6 @@ func (s *server) handleshort(w http.ResponseWriter, r *http.Request) {
 	_, err := w.Write([]byte("Hello world"))
 
 	if err != nil {
-		s.logger.Error(err.Error())
+		logger.Logger.Error(err.Error())
 	}
 }

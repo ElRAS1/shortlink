@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ELRAS1/shortlink/internal/logger"
-	"github.com/ELRAS1/shortlink/store"
+	"github.com/ELRAS1/shortlink/storage"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -18,9 +18,8 @@ type config struct {
 }
 
 type server struct {
-	Srv    *http.Server
-	logger *slog.Logger
-	store  *store.Storage
+	Srv   *http.Server
+	store *storage.Storage
 }
 
 func StartServer(ctx context.Context) server {
@@ -31,21 +30,21 @@ func StartServer(ctx context.Context) server {
 	}
 	server := &server{}
 	server.Srv = &http.Server{Addr: cfg.Port, Handler: server.Routes()}
-	server.logger = logger.ConfigureLogger(cfg.Loglevel, cfg.Configlog)
-	slog.SetDefault(server.logger)
+	// server.logger = logger.ConfigureLogger(cfg.Loglevel, cfg.Configlog)
+	logger.ConfigureLogger(cfg.Loglevel, cfg.Configlog)
+	slog.SetDefault(logger.Logger)
 	log.Printf("app starting in port%s\n", server.Srv.Addr)
 	err = server.ConfigureStore(ctx)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Println("connecting in database")
-
+	logger.Logger.Info("connecting in database")
 	return *server
 }
 
 func (s *server) ConfigureStore(ctx context.Context) error {
-	s.store = store.New()
-	if err := s.store.Open(ctx); err != nil {
+	s.store = storage.New()
+	if err := storage.Open(ctx, s.store); err != nil {
 		return err
 	}
 	return nil
@@ -53,12 +52,12 @@ func (s *server) ConfigureStore(ctx context.Context) error {
 
 func Finish(ctx context.Context, s server) error {
 	if err := s.store.Db.Close(); err != nil {
-		s.logger.Error(err.Error())
+		logger.Logger.Error(err.Error())
 	}
 	log.Println("stopping server in graceful shutdown...")
 	select {
 	case <-ctx.Done():
-		log.Println("context cancelled")
+		logger.Logger.Info("context cancelled")
 		return nil
 	default:
 	}

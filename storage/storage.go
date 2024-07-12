@@ -1,4 +1,4 @@
-package store
+package storage
 
 import (
 	"context"
@@ -15,19 +15,24 @@ import (
 
 type Storage struct {
 	Db    *sqlx.DB
-	Cache *cache
+	Cache *Cache
 	Data  *data
 }
 
+type Storager interface {
+	SaveUrl(urlToSave string, alias string) error
+	CachedUrl()
+}
+
 func New() *Storage {
-	chc := cache{mu: &sync.RWMutex{}, ch: make(map[data]struct{})}
+	chc := Cache{mu: &sync.RWMutex{}, ch: make(map[string]data)}
 	data := data{oldlink: "", newlink: "", id: 0}
 	return &Storage{Db: &sqlx.DB{}, Cache: &chc, Data: &data}
 }
 
-func (s *Storage) Open(ctx context.Context) error {
+func Open(ctx context.Context, s *Storage) error {
 	cfg := configDB{}
-	err := s.loadEnv(&cfg)
+	err := loadEnv(&cfg)
 	if err != nil {
 		return err
 	}
@@ -45,7 +50,7 @@ func (s *Storage) Open(ctx context.Context) error {
 	return nil
 }
 
-func (s *Storage) loadEnv(cfg *configDB) error {
+func loadEnv(cfg *configDB) error {
 	if err := godotenv.Load(); err != nil {
 		return err
 	}

@@ -1,19 +1,10 @@
-package store
-
-import (
-	"sync"
-)
+package storage
 
 type data struct {
 	id      uint8
 	oldlink string
 	newlink string
 }
-type cache struct {
-	mu *sync.RWMutex
-	ch map[data]struct{}
-}
-
 type configDB struct {
 	Port     string `env:"DB_PORT" env-default:"5432"`
 	Host     string `env:"DB_HOST" env-default:"localhost"`
