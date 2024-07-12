@@ -14,7 +14,19 @@ type Cache struct {
 
 func (s *Storage) CachedUrl() {
 	s.Cache.mu.Lock()
-	s.Cache.ch[s.Data.newlink] = *s.Data
+	s.Cache.ch[s.Data.oldlink] = *s.Data
 	logger.Logger.Debug("Data saved successfully", "data", fmt.Sprintf("%+v", s.Data))
 	s.Cache.mu.Unlock()
+}
+
+func (s *Storage) GetCache(link string) (data, bool) {
+	s.Cache.mu.RLock()
+	data, ok := s.Cache.ch[link]
+	if !ok {
+		logger.Logger.Debug("no data found in the cache")
+		return data, false
+	}
+	logger.Logger.Debug("the data is taken from the cache")
+	s.Cache.mu.RUnlock()
+	return data, true
 }
